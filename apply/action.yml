@@ -1,0 +1,43 @@
+name: Growth Agent — apply
+description: >-
+  Checks the patch the model produced and, if it passes, commits and pushes it
+  to a branch. Runs no model and no project code.
+
+inputs:
+  trusted-authors:
+    description: Extra issue authors whose change requests may be implemented.
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+      with:
+        node-version: "22"
+
+    # Only our CLI, and with --ignore-scripts. Your project's dependencies are
+    # never installed in the job that holds the write token.
+    - name: Install the patch checker
+      shell: bash
+      run: npm install -g --ignore-scripts @growthagent/ci@0.8.0
+
+    - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
+      with:
+        name: growth-agent-patch-${{ github.event.issue.number }}
+
+    # Pushes a branch. The pull request is opened by the Growth Agent app,
+    # because GitHub refuses to let Actions create pull requests unless you
+    # tick a repository setting that ships off.
+    - name: Check the patch, then push the branch
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GH_TOKEN: ${{ github.token }}
+        GX_TRUSTED_AUTHORS: ${{ inputs.trusted-authors }}
+        ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        ISSUE_AUTHOR_TYPE: ${{ github.event.issue.user.type }}
+      run: growth-agent-ci apply

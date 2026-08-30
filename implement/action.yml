@@ -1,0 +1,77 @@
+name: Growth Agent — implement
+description: >-
+  Runs the coding model against this repository with no write credential in
+  scope, and emits a patch file for the trusted job to check.
+
+inputs:
+  token:
+    description: The GROWTH_AGENT_TOKEN provisioned into your repository secrets.
+    required: true
+  gateway-url:
+    description: The metering gateway this run spends through.
+    required: true
+  provider:
+    description: Model provider — google or anthropic.
+    default: google
+  model:
+    description: Model id.
+    default: gemini-3.7-flash
+  trusted-authors:
+    description: Extra issue authors whose change requests may be implemented.
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      with:
+        fetch-depth: 1
+        # The checkout must not leave a credential in .git/config: this job
+        # runs a model and your project's install scripts.
+        persist-credentials: false
+
+    - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+      with:
+        node-version: "22"
+
+    # Your own dependencies, so the agent can run your tests. No token is in
+    # scope here — install scripts are arbitrary code.
+    - name: Install project dependencies
+      shell: bash
+      run: |
+        if [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile
+        elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
+        elif [ -f package-lock.json ]; then npm ci
+        else echo "no lockfile — skipping"; fi
+
+    # Both pinned exactly. Updating either is a change to this action, in a
+    # public repository you can watch.
+    - name: Install the coding harness
+      shell: bash
+      run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.2 @growthagent/ci@0.8.0
+
+    - name: Implement the change request
+      shell: bash
+      env:
+        # Never given to the model: the CLI trades this for a run-scoped token
+        # that expires in hours and carries its own spend ceiling, and hands
+        # that back when the job ends.
+        GROWTH_AGENT_TOKEN: ${{ inputs.token }}
+        GX_GATEWAY_URL: ${{ inputs.gateway-url }}
+        GX_CI_PROVIDER: ${{ inputs.provider }}
+        GX_CI_MODEL: ${{ inputs.model }}
+        GX_TRUSTED_AUTHORS: ${{ inputs.trusted-authors }}
+        # Passed as environment, never interpolated into the run script: a
+        # ${{ }} expression containing issue text would be substituted into the
+        # shell before bash ever saw it as a string.
+        ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        ISSUE_AUTHOR_TYPE: ${{ github.event.issue.user.type }}
+      run: growth-agent-ci implement
+
+    - name: Hand the patch to the trusted job
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+      with:
+        name: growth-agent-patch-${{ github.event.issue.number }}
+        path: growth-agent.patch
+        retention-days: 1
+        if-no-files-found: error
