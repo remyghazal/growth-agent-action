@@ -48,7 +48,7 @@ runs:
     # public repository you can watch.
     - name: Install the coding harness
       shell: bash
-      run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.2 @growthagent/ci@0.10.0
+      run: npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.84.2 @growthagent/ci@0.11.0
 
     - name: Implement the change request
       shell: bash
