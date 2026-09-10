@@ -1,0 +1,28 @@
+name: Growth Agent — verify
+description: Builds and tests the exact patch in a fresh job without write or model credentials.
+inputs:
+  trusted-authors:
+    description: Extra trusted request authors.
+    default: ""
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      with:
+        persist-credentials: false
+    - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+      with:
+        node-version: "22"
+    - name: Install the verification harness
+      shell: bash
+      run: npm install -g --ignore-scripts @growthagent/ci@0.12.0 && corepack enable
+    - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+      with:
+        name: growth-agent-patch-${{ github.event.issue.number }}
+    - name: Check, build and test the exact patch
+      shell: bash
+      env:
+        GX_TRUSTED_AUTHORS: ${{ inputs.trusted-authors }}
+        ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        ISSUE_AUTHOR_TYPE: ${{ github.event.issue.user.type }}
+      run: growth-agent-ci verify

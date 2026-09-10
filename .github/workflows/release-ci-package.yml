@@ -1,0 +1,45 @@
+name: Release runner
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: npm-runner-release
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: node scripts/verify-runner.mjs
+      - run: npm pack --dry-run --ignore-scripts
+        working-directory: runner
+  publish:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.19.1 --ignore-scripts
+      - run: node scripts/verify-runner.mjs
+      # OIDC authorization is restricted to this public repository/workflow.
+      # Provenance covers the checked-in distribution, not private source.
+      - run: npm publish --provenance --access public --ignore-scripts
+        working-directory: runner

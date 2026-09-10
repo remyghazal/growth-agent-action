@@ -16,6 +16,9 @@ A prompt-injected model has nothing to push with: its only output is a file.
 changes — and pushes a branch if it passes. It runs no model and no project
 code, and installs only this package, with `--ignore-scripts`.
 
+**`verify/`** checks instrumentation patches in a separate job without write or
+model credentials. Workflow version 12 requires this job before apply.
+
 The pull request is opened by the Growth Agent app, not from your Action.
 GitHub refuses `gh pr create` from Actions unless a repository setting that
 ships *off* has been ticked, and nobody should have to discover that from a
@@ -32,5 +35,15 @@ review each change before it reaches your CI.
 
 ## Releasing
 
-Generated from the [growthagent](https://github.com/remyghazal/growthagent)
-monorepo. Do not edit here.
+Actions and the bundled `runner/` package are staged from our private monorepo
+after its release gates pass. No private application source is copied here.
+The runner's `release.json` records the source commit and distribution hashes.
+The public workflow checks those hashes, package metadata, action version pins,
+and an offline runner smoke test. It publishes only on manual dispatch from
+`main`, using npm trusted publishing and provenance. Provenance covers this
+checked-in distribution and its publication, not a public source rebuild.
+
+Configure the npm trusted publisher for `@growthagent/ci` with GitHub owner
+`remyghazal`, repository `growth-agent-action`, workflow
+`release-ci-package.yml`, and direct publish permission. No npm token is stored
+in GitHub. Publish the package before moving the customer-facing `v1` tag.
