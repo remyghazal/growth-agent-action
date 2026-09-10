@@ -23,7 +23,7 @@ runs:
     # never installed in the job that holds the write token.
     - name: Install the patch checker
       shell: bash
-      run: npm install -g --ignore-scripts @growthagent/ci@0.11.0
+      run: npm install -g --ignore-scripts @growthagent/ci@0.12.0
 
     - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
       with:

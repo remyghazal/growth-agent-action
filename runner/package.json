@@ -1,0 +1,34 @@
+{
+  "name": "@growthagent/ci",
+  "version": "0.12.0",
+  "type": "module",
+  "bin": {
+    "growth-agent-ci": "./dist/cli.js"
+  },
+  "description": "Implements Growth Agent change requests inside your own CI runner.",
+  "license": "MIT",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "growth-agent",
+    "ab-testing",
+    "experiments",
+    "github-actions"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remyghazal/growth-agent-action.git",
+    "directory": "runner"
+  },
+  "homepage": "https://github.com/remyghazal/growth-agent-action#readme",
+  "bugs": {
+    "url": "https://github.com/remyghazal/growth-agent-action/issues"
+  }
+}

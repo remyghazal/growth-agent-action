@@ -1,0 +1,10 @@
+{
+  "version": "0.12.0",
+  "sourceCommit": "ba9a6542f37323240fcad611764ffabb27c2a09c",
+  "files": {
+    "dist/assets/skills/implement-experiment/SKILL.md": "4d6557163b1685094bb51e6d5edabb69e006d3b1091ea172092acab8e81f0386",
+    "dist/cli.js": "6bc25bda41fa5570e4210094fc1d5333085b6d2d43683838844eb669950abaf4",
+    "package.json": "5ccbeaea3c1c6d8dc6c7011e7049bfa8729df369d4f0ea6a89e87bc0f93b0415",
+    "README.md": "7cfa8c701bd06177d3cad59a41dcd38e3b105e0aa4b5ee9b4c09c311f46a4a77"
+  }
+}
